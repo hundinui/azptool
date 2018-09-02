@@ -1,5 +1,5 @@
 # AZPTOOL
-7,62HC .azp archive manipulation tool
+7,62 High Caliber .azp archive manipulation tool
 
 Licenced under GNU GPLv3.
 
