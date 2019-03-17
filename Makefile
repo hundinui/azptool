@@ -1,22 +1,27 @@
-#CC=clang
-CC=gcc
-#CC=i686-w64-mingw32-gcc
-OBJDIR=obj
+PROGNAME = azptool
+BINDIR = bin
+OBJDIR = obj
 
-SRC = $(wildcard *.c)
-OBJ = $(addprefix $(OBJDIR)/, $(notdir $(SRC:.c=.o)))
+CC = clang
+LIBS = zlib
+LDFLAGS = $(shell pkg-config --libs $(LIBS)) -flto
+CFLAGS = $(shell pkg-config --cflags $(LIBS)) -Wall -Wpedantic -Werror -std=c99 -O3
 
-CFLAGS = -std=c99 -Wall -Werror -Wno-unused -Os -g -D_GNU_SOURCE -lz -DCOUNT_TIME_TAKEN
+SRCS = $(wildcard *.c)
+OBJS := $(patsubst %.c,%.o, $(SRCS))
 
-azptool: $(OBJ)
-	$(CC) $(OBJ) $(CFLAGS) -o $@
+.PHONY: default dirs clean all
 
-obj/%.o: %.c | obj
-	$(CC) $< -c $(CFLAGS) -o $@
+all: $(PROGNAME)
 
+$(OBJDIR)/%.o: %.c
+	$(CC) $(CFLAGS) -c -o $@ $<
 
-obj:
-	mkdir $(OBJDIR)
-
+$(PROGNAME): dirs $(foreach obj,$(OBJS), $(OBJDIR)/$(obj))
+	$(CC) -o $(BINDIR)/$(PROGNAME) $(foreach obj,$(OBJS), $(OBJDIR)/$(obj)) $(LDFLAGS)
+	
+dirs:
+	mkdir -p $(OBJDIR) $(BINDIR)
+	
 clean:
-	rm $(OBJ)
+	rm -fv $(OBJDIR)/*.o $(BINDIR)/$(PROGNAME)
